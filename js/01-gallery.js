@@ -1,35 +1,49 @@
 import { galleryItems } from './gallery-items.js';
 // Change code below this line
 
-console.log(galleryItems);
+const galleryRef = document.querySelector(".gallery");
 
-// console.log(basicLightbox);
+const markup = galleryItems.map(({ preview, original, description }) => {
+    return `<div class="gallery__item">
+    <a class="gallery__link" href="${original}">
+      <img
+        class="gallery__image"
+        src="${preview}"
+        data-source="${original}"
+        alt="${description}"
+      />
+    </a>
+  </div>`;
+}).join("");
 
-// const instance = basicLightbox.create(`
-// 	<h1>Dynamic Content</h1>
-// 	<p>You can set the content of the lightbox with JS.</p>
-// `)
-// // instance.show()
-// instance.show(() => console.log('lightbox now visible'))
+galleryRef.innerHTML = markup;
 
-// setTimeout(instance.close(() => console.log('lightbox not visible anymore')), 5000)
+galleryRef.addEventListener("click", onClickImagePreview);
 
-const instance = basicLightbox.create(`
-    <div class="modal">
-        <p>
-            Your first lightbox with just a few lines of code.
-            Yes, it's really that simple.
-        </p>
-    </div>
-`, {
-    onShow: (instance) => {
-        console.log("hello world!")
-    },
-})
+function onClickImagePreview(e) {
+    e.preventDefault();
 
-instance.show()
+    if (e.target.nodeName !== 'IMG') {
+        return;
+    }
+    const instance = basicLightbox.create(
+        `<div class="modal"><img src="${e.target.dataset.source}"></div>`,
+        {
+            onShow: instance => {
+                document.addEventListener('keydown', onModalAddKeydown);
+            },
+            onClose: instance => {
+                document.removeEventListener('keydown', onModalAddKeydown);
+            },
+        }
+    );
+    instance.show();
 
-// instance.close()
-
-
-new SimpleLightbox('.test a', { /* options */ });
+    function onModalAddKeydown(e) {
+        if (e.code !== "Escape") {
+            return;
+        } else {
+            instance.close();
+        }
+    }
+}
